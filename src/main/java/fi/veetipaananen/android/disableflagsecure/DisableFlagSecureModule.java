@@ -16,6 +16,8 @@ public class DisableFlagSecureModule implements IXposedHookLoadPackage {
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
         XposedHelpers.findAndHookMethod(Window.class, "setFlags", int.class, int.class,
                 mRemoveSecureFlagHook);
+        XposedHelpers.findAndHookMethod(Window.class, "addFlags", int.class,
+                mRemoveAddFlagsHook);
         if (Build.VERSION.SDK_INT >= 17) {
             XposedHelpers.findAndHookMethod(SurfaceView.class, "setSecure", boolean.class,
                     mRemoveSetSecureHook);
@@ -28,6 +30,20 @@ public class DisableFlagSecureModule implements IXposedHookLoadPackage {
             Integer flags = (Integer) param.args[0];
             flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
             param.args[0] = flags;
+
+            Integer mask = (Integer) param.args[1];
+            mask &= ~WindowManager.LayoutParams.FLAG_SECURE;
+            param.args[1] = mask;
+        }
+    };
+
+    private final XC_MethodHook mRemoveAddFlagsHook = new XC_MethodHook() {
+        @Override
+        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+            Integer flags = (Integer) param.args[0];
+            flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
+            param.args[0] = flags;
+
         }
     };
 
