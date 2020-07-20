@@ -1,6 +1,7 @@
 package fi.veetipaananen.android.disableflagsecure;
 
 import android.os.Build;
+import android.view.Display;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
@@ -21,6 +22,7 @@ public class DisableFlagSecureModule implements IXposedHookLoadPackage {
         if (Build.VERSION.SDK_INT >= 17) {
             XposedHelpers.findAndHookMethod(SurfaceView.class, "setSecure", boolean.class,
                     mRemoveSetSecureHook);
+            XposedHelpers.findAndHookMethod(Display.class, "getFlags", mAddDisplaySecureFlagHook);
         }
     }
 
@@ -54,4 +56,10 @@ public class DisableFlagSecureModule implements IXposedHookLoadPackage {
         }
     };
 
+    private final XC_MethodHook mAddDisplaySecureFlagHook = new XC_MethodHook() {
+        @Override
+        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+            param.setResult((int)param.getResult() | Display.FLAG_SECURE | Display.FLAG_SUPPORTS_PROTECTED_BUFFERS);
+        }
+    };
 }
